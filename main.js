@@ -22,9 +22,14 @@ geometries.forEach((geometry) => {
 camera.position.z = 5;
 
 function startAnimation() {
+  const tl = gsap.timeline();
+
   objects.forEach((obj, index) => {
-    gsap.to(obj.rotation, { duration: 2, x: obj.rotation.x + Math.PI * 2, delay: index * 0.2 });
-    gsap.to(obj.position, { duration: 2, x: obj.position.x + (Math.random() - 0.5) * 2, y: obj.position.y + (Math.random() - 0.5) * 2, delay: index * 0.2 });
+    tl.to(obj.rotation, { duration: 2, x: obj.rotation.x + Math.PI * 2, delay: index * 0.2 }, "<").to(
+      obj.position,
+      { duration: 2, x: obj.position.x + (Math.random() - 0.5) * 2, y: obj.position.y + (Math.random() - 0.5) * 2, delay: index * 0.2 },
+      "<"
+    );
 
     anime({
       targets: obj.material.color,
@@ -37,7 +42,7 @@ function startAnimation() {
     });
   });
 
-  gsap.to("#animateButton", { duration: 1, scale: 1.5, yoyo: true, repeat: 1 });
+  tl.to("#animateButton", { duration: 1, scale: 1.5, yoyo: true, repeat: 1 }, "<");
 
   anime({
     targets: "#animateButton",
@@ -55,6 +60,16 @@ function changeMaterial() {
   });
 }
 
+// register the effect with GSAP:
+gsap.registerEffect({
+  name: "fade",
+  effect: (targets, config) => {
+    return gsap.to(targets, { duration: config.duration, opacity: 0 });
+  },
+  defaults: { duration: 2 }, //defaults get applied to any "config" object passed to the effect
+  extendTimeline: true, //now you can call the effect directly on any GSAP timeline to have the result immediately inserted in the position you define (default is sequenced at the end)
+});
+
 function shuffleObjects() {
   objects.forEach((obj) => {
     scene.remove(obj);
@@ -69,6 +84,8 @@ function shuffleObjects() {
     scene.add(mesh);
     objects.push(mesh);
   });
+
+  gsap.effects.fade("#shuffleObjectsButton");
 }
 
 document.getElementById("animateButton").addEventListener("click", startAnimation);
